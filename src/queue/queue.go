@@ -4,28 +4,36 @@ import (
 	"sync"
 )
 
-type Queue []string
+type Queue struct {
+	sync.Mutex
+	queue []string
+}
 
-var mutex = &sync.Mutex{}
+func NewQueue() Queue {
+	queue := Queue{}
+	q := make([]string, 0)
+	queue.queue = q
+	return queue
+}
 
 func (q *Queue) Push(s string) {
-	mutex.Lock()
-	defer mutex.Unlock()
-	*q = append(*q, s)
+	q.Lock()
+	defer q.Unlock()
+	q.queue = append(q.queue, s)
 	return
 }
 
 func (q *Queue) Pop() (s string) {
-	defer mutex.Unlock()
-	mutex.Lock()
-	s = (*q)[0]
-	*q = (*q)[1:]
+	defer q.Unlock()
+	q.Lock()
+	s = (q.queue)[0]
+	q.queue = (q.queue)[1:]
 	return
 }
 
 func (q *Queue) Len() int {
-	defer mutex.Unlock()
-	mutex.Lock()
-	len := len(*q)
+	defer q.Unlock()
+	q.Lock()
+	len := len(q.queue)
 	return len
 }
