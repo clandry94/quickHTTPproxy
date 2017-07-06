@@ -6,9 +6,16 @@ import (
 )
 
 type Handler struct {
-	Queue       queue.Queue
+	Queue       *queue.Queue
 	WorkerCount int
 	// TODO add thread pooling
+}
+
+//func NewHandler(queuePriorityMap queue.QueuePriorityMap, workerCount int) Handler {
+func NewHandler(workerCount int) Handler {
+	q := queue.NewQueue()
+	h := Handler{Queue: &q, WorkerCount: workerCount}
+	return h
 }
 
 func (h *Handler) HandleConnection() {
