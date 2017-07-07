@@ -1,0 +1,13 @@
+{
+  "worker_count": 2,
+  "port": 8080,
+  "queue_spec": [{
+      "tag": "jeanie",
+      "priority": 1
+    },
+    {
+      "tag": "conor",
+      "priority": 2
+    }
+  ]
+}
