@@ -3,19 +3,14 @@ package proxy
 import (
 	"fmt"
 	"github.com/clandry94/quickHTTPproxy/src/queue"
+	"github.com/golang/glog"
 	//"net"
 )
 
-type Handler struct {
-	rankedQueueMap queue.RankedQueueMap
-	WorkerCount    int
-	Port           int
-}
-
 type HandlerSpec struct {
 	WorkerCount  int
-	QueueConfigs []QueueConfig
 	Port         int
+	QueueConfigs []QueueConfig
 }
 
 type QueueConfig struct {
@@ -23,17 +18,25 @@ type QueueConfig struct {
 	Priority int
 }
 
+type Handler struct {
+	rankedQueueMap *queue.RankedQueueMap
+	WorkerCount    int
+	Port           int
+}
+
 func New(spec *HandlerSpec) *Handler {
-	rankedQueueMap := queue.NewRankedQueueMap()
+	glog.Info("Creating new proxy handler")
+	rqm := queue.NewRankedQueueMap()
 
 	for _, queueConfig := range spec.QueueConfigs {
 		rankedQueue := queue.NewRankedQueue(queueConfig.Tag, queueConfig.Priority)
-		rankedQueueMap.Insert(&rankedQueue)
+		rqm.Insert(&rankedQueue)
 	}
 
 	return &Handler{
-		WorkerCount: spec.WorkerCount,
-		Port:        spec.Port,
+		rankedQueueMap: rqm,
+		WorkerCount:    spec.WorkerCount,
+		Port:           spec.Port,
 	}
 }
 

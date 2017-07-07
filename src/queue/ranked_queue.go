@@ -10,6 +10,7 @@ type RankedQueue struct {
 }
 
 func NewRankedQueue(tag string, priority int) RankedQueue {
+	glog.Info("Creating ranked queue")
 	rankedQueue := RankedQueue{
 		queue:    NewQueue(),
 		Tag:      Tag(tag),

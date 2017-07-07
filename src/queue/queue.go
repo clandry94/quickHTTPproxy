@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"github.com/golang/glog"
 	"sync"
 )
 
@@ -10,6 +11,7 @@ type Queue struct {
 }
 
 func NewQueue() *Queue {
+	glog.Info("Creating new queue")
 	return &Queue{
 		queue: make([]string, 0),
 	}
