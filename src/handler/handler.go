@@ -2,20 +2,28 @@ package handler
 
 import (
 	"fmt"
-	"github.com/clandry94/quickHTTPproxy/src/queue"
+	"github.com/clandry94/quickHTTPproxy/src/queue_map"
 )
 
 type Handler struct {
-	Queue       *queue.Queue
-	WorkerCount int
+	rankedQueueMap queue_map.RankedQueueMap
+	WorkerCount    int
 	// TODO add thread pooling
 }
 
-//func NewHandler(queuePriorityMap queue.QueuePriorityMap, workerCount int) Handler {
-func NewHandler(workerCount int) Handler {
-	q := queue.NewQueue()
-	h := Handler{Queue: &q, WorkerCount: workerCount}
-	return h
+type HandlerSpec struct {
+	WorkerCount int
+	QueueConfig *[]QueueConfig
+}
+
+type QueueConfig struct {
+	tag      string
+	priority int
+}
+
+func NewHandler(spec *HandlerSpec) Handler {
+	// TODO build queue map
+	// assign spec
 }
 
 func (h *Handler) HandleConnection() {

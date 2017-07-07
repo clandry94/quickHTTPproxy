@@ -9,11 +9,10 @@ type Queue struct {
 	queue []string
 }
 
-func NewQueue() Queue {
-	queue := Queue{}
-	q := make([]string, 0)
-	queue.queue = q
-	return queue
+func NewQueue() *Queue {
+	return &Queue{
+		queue: make([]string, 0),
+	}
 }
 
 func (q *Queue) Push(s string) {

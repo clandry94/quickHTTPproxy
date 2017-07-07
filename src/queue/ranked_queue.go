@@ -4,16 +4,16 @@ type Tag string
 type Priority int
 
 type RankedQueue struct {
-	queue    Queue
+	queue    *Queue
 	Tag      Tag
 	Priority Priority
 }
 
-func NewRankedQueue(q Queue, t string, p int) RankedQueue {
+func NewRankedQueue(tag string, priority int) RankedQueue {
 	rankedQueue := RankedQueue{
-		queue:    q,
-		Tag:      Tag(t),
-		Priority: Priority(p),
+		queue:    NewQueue(),
+		Tag:      Tag(tag),
+		Priority: Priority(priority),
 	}
 	return rankedQueue
 }
