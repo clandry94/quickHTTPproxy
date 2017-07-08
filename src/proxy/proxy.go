@@ -3,7 +3,7 @@ package proxy
 import (
 	"github.com/clandry94/quickHTTPproxy/src/queue"
 	"github.com/clandry94/quickHTTPproxy/src/spec"
-	"github.com/golang/glog"
+	"github.com/ivahaev/go-logger"
 	//"net"
 )
 
@@ -14,7 +14,7 @@ type Handler struct {
 }
 
 func New(s *spec.HandlerSpec) *Handler {
-	glog.Info("Creating new proxy handler")
+	logger.Info("Creating new proxy handler")
 	rqm := queue.NewRankedQueueMap()
 
 	for _, queueConfig := range s.QueueConfigs {

@@ -2,23 +2,25 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/clandry94/quickHTTPproxy/src/proxy"
 	"github.com/clandry94/quickHTTPproxy/src/spec"
-	"github.com/golang/glog"
+	"github.com/ivahaev/go-logger"
 	"io/ioutil"
 	"os"
 )
 
 func main() {
+	logger.SetLevel("DEBUG")
+	logger.Info("Initializing...")
 	config := os.Args[1]
-	glog.Info("Starting...")
-	glog.Infof("Unmarshalling %v", config)
 	handlerSpec, err := loadConfig(config)
 	if err != nil {
-		glog.Fatal(err)
+		logger.Error(err)
 		panic(err)
 	}
-	glog.Info(handlerSpec)
-
+	logger.Info("Spec loaded")
+	proxy := proxy.New(handlerSpec)
+	logger.Info("Proxy loaded", proxy)
 }
 
 func loadConfig(config string) (*spec.HandlerSpec, error) {
@@ -26,13 +28,13 @@ func loadConfig(config string) (*spec.HandlerSpec, error) {
 
 	j, err := ioutil.ReadFile(config)
 	if err != nil {
-		glog.Fatalf("Unable to read configuration file, %v", config)
+		logger.Error("Unable to read configuration file", config)
 		return hs, err
 	}
 
 	err = json.Unmarshal(j, &hs)
 	if err != nil {
-		glog.Fatal("Unable to unmarshal config")
+		logger.Error("Unable to unmarshal config")
 		return hs, err
 	}
 	return hs, err
