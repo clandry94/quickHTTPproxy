@@ -1,5 +1,9 @@
 package queue
 
+import (
+	"net"
+)
+
 type Tag string
 type Priority int
 
@@ -18,11 +22,11 @@ func NewRankedQueue(tag string, priority int) RankedQueue {
 	return rankedQueue
 }
 
-func (rq *RankedQueue) Push(s string) {
-	rq.queue.Push(s)
+func (rq *RankedQueue) Push(c net.Conn) {
+	rq.queue.Push(c)
 }
 
-func (rq *RankedQueue) Pop() string {
+func (rq *RankedQueue) Pop() net.Conn {
 	return rq.queue.Pop()
 }
 

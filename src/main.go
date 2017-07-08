@@ -13,29 +13,30 @@ func main() {
 	logger.SetLevel("DEBUG")
 	logger.Info("Initializing...")
 	config := os.Args[1]
-	handlerSpec, err := loadConfig(config)
+	proxySpec, err := loadConfig(config)
 	if err != nil {
 		logger.Error(err)
 		panic(err)
 	}
 	logger.Info("Spec loaded")
-	proxy := proxy.New(handlerSpec)
-	logger.Info("Proxy loaded", proxy)
+	p := proxy.New(proxySpec)
+	logger.Info("Proxy loaded", p)
+	p.Listen()
 }
 
-func loadConfig(config string) (*spec.HandlerSpec, error) {
-	var hs *spec.HandlerSpec
+func loadConfig(config string) (*spec.ProxySpec, error) {
+	var ps *spec.ProxySpec
 
 	j, err := ioutil.ReadFile(config)
 	if err != nil {
 		logger.Error("Unable to read configuration file", config)
-		return hs, err
+		return ps, err
 	}
 
-	err = json.Unmarshal(j, &hs)
+	err = json.Unmarshal(j, &ps)
 	if err != nil {
 		logger.Error("Unable to unmarshal config")
-		return hs, err
+		return ps, err
 	}
-	return hs, err
+	return ps, err
 }

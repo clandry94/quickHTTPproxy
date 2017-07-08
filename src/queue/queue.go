@@ -1,31 +1,32 @@
 package queue
 
 import (
+	"net"
 	"sync"
 )
 
 type Queue struct {
 	sync.Mutex
-	queue []string
+	queue []net.Conn
 }
 
 func NewQueue() *Queue {
 	return &Queue{
-		queue: make([]string, 0),
+		queue: make([]net.Conn, 0),
 	}
 }
 
-func (q *Queue) Push(s string) {
+func (q *Queue) Push(c net.Conn) {
 	q.Lock()
 	defer q.Unlock()
-	q.queue = append(q.queue, s)
+	q.queue = append(q.queue, c)
 	return
 }
 
-func (q *Queue) Pop() (s string) {
+func (q *Queue) Pop() (c net.Conn) {
 	defer q.Unlock()
 	q.Lock()
-	s = (q.queue)[0]
+	c = (q.queue)[0]
 	q.queue = (q.queue)[1:]
 	return
 }
