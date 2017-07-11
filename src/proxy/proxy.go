@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"github.com/clandry94/quickHTTPproxy/proxy/worker"
 	"github.com/clandry94/quickHTTPproxy/src/queue"
 	"github.com/clandry94/quickHTTPproxy/src/spec"
 	"github.com/ivahaev/go-logger"
@@ -8,7 +9,7 @@ import (
 )
 
 type Handler struct {
-	rankedQueueMap *queue.RankedQueueMap
+	RankedQueueMap *queue.RankedQueueMap
 	WorkerCount    int
 	Port           string
 }
@@ -23,13 +24,15 @@ func New(s *spec.ProxySpec) *Handler {
 	}
 
 	return &Handler{
-		rankedQueueMap: rqm,
+		RankedQueueMap: rqm,
 		WorkerCount:    s.HandlerSpec.WorkerCount,
 		Port:           s.HandlerSpec.Port,
 	}
 }
 
 func (h *Handler) Listen() error {
+	p := NewConnWorkerPool(2, h.RankedQueueMap)
+	p.Start()
 	ln, err := net.Listen("tcp", h.Port)
 	if err != nil {
 		logger.Error(err)
@@ -42,8 +45,8 @@ func (h *Handler) Listen() error {
 			logger.Error(err)
 			return err
 		}
-		h.rankedQueueMap.RankedQueueMap["conor"].Push(conn)
+		h.RankedQueueMap.RankedQueueMap["conor"].Push(conn)
 		logger.Info("Pushed conn onto queue")
-		logger.Info("Queue size is now: ", h.rankedQueueMap.RankedQueueMap["conor"].Len())
+		logger.Info("Queue size is now: ", h.RankedQueueMap.RankedQueueMap["conor"].Len())
 	}
 }
