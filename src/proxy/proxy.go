@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"github.com/clandry94/quickHTTPproxy/proxy/worker"
 	"github.com/clandry94/quickHTTPproxy/src/queue"
 	"github.com/clandry94/quickHTTPproxy/src/spec"
 	"github.com/ivahaev/go-logger"
@@ -31,8 +30,7 @@ func New(s *spec.ProxySpec) *Handler {
 }
 
 func (h *Handler) Listen() error {
-	p := NewConnWorkerPool(2, h.RankedQueueMap)
-	p.Start()
+	go NewConnWorkerPool(2, h.RankedQueueMap)
 	ln, err := net.Listen("tcp", h.Port)
 	if err != nil {
 		logger.Error(err)

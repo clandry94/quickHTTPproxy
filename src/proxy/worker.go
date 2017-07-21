@@ -1,34 +1,24 @@
-package worker
+package proxy
 
 import (
 	"crypto/sha1"
+	"fmt"
 	"github.com/clandry94/quickHTTPproxy/src/queue"
 	"hash"
 )
 
-type ConnWorkerPool chan *connWorker
-
-func NewConnWorkerPool(size int, rankedQueueMap *queue.RankedQueueMap) *ConnWorkerPool {
-	connWorkerPool := make(ConnWorkerPool, size)
+func NewConnWorkerPool(size int, rankedQueueMap *queue.RankedQueueMap) {
 
 	for i := 0; i < size; i++ {
-		connWorkerPool <- &connWorker{
+		worker := connWorker{
 			ID:             createWorkerID(),
 			RankedQueueMap: rankedQueueMap,
 			Status:         "stopped",
 			stop:           make(chan bool, 1),
 		}
+		go worker.Run()
 	}
 
-	return &connWorkerPool
-}
-
-func (cwp *ConnWorkerPool) Start() {
-	for {
-		worker := <-cwp
-		worker.Run()
-		cwp <- worker
-	}
 }
 
 func createWorkerID() hash.Hash {
@@ -52,7 +42,8 @@ func (cw *connWorker) Run() {
 			default:
 				if cw.RankedQueueMap.RankedQueueMap["conor"].Len() > 0 {
 					conn := cw.RankedQueueMap.RankedQueueMap["conor"].Pop()
-					conn.Close()
+					fmt.Println(conn)
+					//conn.Close()
 				}
 			}
 		}
