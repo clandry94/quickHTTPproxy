@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/clandry94/quickHTTPproxy/src/proxy"
 	"github.com/clandry94/quickHTTPproxy/src/spec"
 	"github.com/ivahaev/go-logger"
@@ -12,7 +13,13 @@ import (
 func main() {
 	logger.SetLevel("DEBUG")
 	logger.Info("Initializing...")
-	config := os.Args[1]
+
+	config, err := checkArgs()
+	if err != nil {
+		logger.Error(err)
+		os.Exit(2)
+	}
+
 	proxySpec, err := loadConfig(config)
 	if err != nil {
 		logger.Error(err)
@@ -22,6 +29,14 @@ func main() {
 	p := proxy.New(proxySpec)
 	logger.Info("Proxy loaded", p)
 	p.Listen()
+}
+
+func checkArgs() (string, error) {
+	if len(os.Args) < 2 {
+		return "", fmt.Errorf("No configuration file provided")
+	}
+
+	return os.Args[1], nil
 }
 
 func loadConfig(config string) (*spec.ProxySpec, error) {
