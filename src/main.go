@@ -27,7 +27,7 @@ func main() {
 	}
 	logger.Info("Spec loaded")
 	p := proxy.New(proxySpec)
-	logger.Info("Proxy loaded", p)
+	logger.Info("Proxy loaded")
 	p.Listen()
 }
 

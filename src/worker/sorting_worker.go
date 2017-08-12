@@ -3,15 +3,16 @@ package worker
 import (
 	"bufio"
 	"crypto/sha1"
-	"fmt"
 	"github.com/ivahaev/go-logger"
 	"hash"
 	"net"
+	"net/http"
 )
 
 type SortingWorker struct {
 	id             hash.Hash
 	newConnections chan net.Conn
+	Requests       chan *http.Request
 	quit           chan bool
 }
 
@@ -37,18 +38,28 @@ func (sw SortingWorker) Run() {
 			case work := <-sw.newConnections:
 				logger.Info("New work for worker")
 				buffReader := bufio.NewReader(work)
-				bytes, err := buffReader.ReadBytes('\n')
+				err := sw.pushHttpRequest(buffReader)
 				if err != nil {
-					fmt.Println(err)
-				} else {
-					fmt.Printf("%s", bytes)
+					logger.Error(err)
 				}
-				work.Close()
-				logger.Info("Connection closed")
+				//logger.Info(req)
+				//work.Close()
+				//logger.Info("Connection closed")
 			case <-sw.quit:
 				logger.Info("Closing worker", sw.id)
 			}
 
 		}
 	}()
+}
+
+func (sw SortingWorker) pushHttpRequest(b *bufio.Reader) error {
+	req, err := http.ReadRequest(b)
+	if err != nil {
+		return err
+	}
+	sw.Requests <- req
+
+	// add some debug logging
+	return err
 }

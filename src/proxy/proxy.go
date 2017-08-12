@@ -5,26 +5,40 @@ import (
 	"github.com/clandry94/quickHTTPproxy/src/worker"
 	"github.com/ivahaev/go-logger"
 	"net"
+	"net/http"
 )
 
 const MaxConnections = 1000
+const MaxRequests = 1000
 const MaxNewConnWorkers = 5
+const MaxRequestWorkers = 5
 
 type Handler struct {
 	NewConnections          chan net.Conn
+	Requests                chan *http.Request
 	WorkerCount             int
 	Port                    string
 	NewConnectionWorkerPool [MaxNewConnWorkers]worker.SortingWorker
+	RequestWorkerPool       [MaxRequestWorkers]worker.RequestWorker
 }
 
 func New(s *spec.ProxySpec) *Handler {
 	logger.Info("Creating new proxy handler")
 	var pool [MaxNewConnWorkers]worker.SortingWorker
 
+	logger.Info("Creating sorting workers")
 	newConns := make(chan net.Conn, MaxConnections)
 	for i := 0; i < MaxNewConnWorkers; i++ {
 		pool[i] = worker.NewSortingWorker(newConns)
 		go pool[i].Run()
+	}
+
+	logger.Info("Creating request workers")
+	var requestWorkerPool [MaxRequestWorkers]worker.RequestWorker
+	requests := make(chan *http.Request, MaxRequests)
+	for j := 0; j < MaxRequestWorkers; j++ {
+		requestWorkerPool[j] = worker.NewRequestWorker(requests)
+		go requestWorkerPool[j].Run()
 	}
 
 	return &Handler{
@@ -32,6 +46,7 @@ func New(s *spec.ProxySpec) *Handler {
 		WorkerCount:    s.HandlerSpec.WorkerCount,
 		Port:           s.HandlerSpec.Port,
 		NewConnectionWorkerPool: pool,
+		RequestWorkerPool:       requestWorkerPool,
 	}
 }
 
