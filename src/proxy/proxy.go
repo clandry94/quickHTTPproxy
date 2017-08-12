@@ -7,7 +7,7 @@ import (
 	"net"
 )
 
-const MaxConnections = 50
+const MaxConnections = 1000
 const MaxNewConnWorkers = 5
 
 type Handler struct {
@@ -24,6 +24,7 @@ func New(s *spec.ProxySpec) *Handler {
 	newConns := make(chan net.Conn, MaxConnections)
 	for i := 0; i < MaxNewConnWorkers; i++ {
 		pool[i] = worker.NewSortingWorker(newConns)
+		go pool[i].Run()
 	}
 
 	return &Handler{
@@ -45,6 +46,7 @@ func (h *Handler) Listen() error {
 	logger.Info("Listening...")
 
 	for {
+		logger.Info("Number of connections", len(h.NewConnections))
 		if len(h.NewConnections) > MaxConnections*0.90 {
 			logger.Warn("Approaching maximum connections", len(h.NewConnections))
 		}

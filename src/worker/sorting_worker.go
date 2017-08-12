@@ -1,7 +1,9 @@
 package worker
 
 import (
+	"bufio"
 	"crypto/sha1"
+	"fmt"
 	"github.com/ivahaev/go-logger"
 	"hash"
 	"net"
@@ -27,16 +29,24 @@ func (sw SortingWorker) stop() {
 	}()
 }
 
-func (sw SortingWorker) run() {
+func (sw SortingWorker) Run() {
 	func() {
 		for {
 
 			select {
 			case work := <-sw.newConnections:
-				logger.Info("New work for worker %v", sw.id)
+				logger.Info("New work for worker")
+				buffReader := bufio.NewReader(work)
+				bytes, err := buffReader.ReadBytes('\n')
+				if err != nil {
+					fmt.Println(err)
+				} else {
+					fmt.Printf("%s", bytes)
+				}
 				work.Close()
+				logger.Info("Connection closed")
 			case <-sw.quit:
-				logger.Info("Closing worker %v", sw.id)
+				logger.Info("Closing worker", sw.id)
 			}
 
 		}

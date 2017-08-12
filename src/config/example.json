@@ -1,7 +1,7 @@
 {
   "handler_spec": {
     "worker_count": 30,
-    "port": ":8080",
+    "port": ":8081",
     "queue_spec": [{
         "tag": "jeanie",
         "priority": 1
