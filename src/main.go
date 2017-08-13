@@ -8,12 +8,13 @@ import (
 	"github.com/ivahaev/go-logger"
 	"io/ioutil"
 	"os"
+	"runtime"
 )
 
 func main() {
 	logger.SetLevel("DEBUG")
 	logger.Info("Initializing...")
-
+	logger.Info("GOMAXPROCS", runtime.GOMAXPROCS)
 	config, err := checkArgs()
 	if err != nil {
 		logger.Error(err)

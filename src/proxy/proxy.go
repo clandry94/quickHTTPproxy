@@ -10,43 +10,32 @@ import (
 
 const MaxConnections = 1000
 const MaxRequests = 1000
-const MaxNewConnWorkers = 5
-const MaxRequestWorkers = 5
+const MaxWorkers = 20
 
 type Handler struct {
-	NewConnections          chan net.Conn
-	Requests                chan *http.Request
-	WorkerCount             int
-	Port                    string
-	NewConnectionWorkerPool [MaxNewConnWorkers]worker.SortingWorker
-	RequestWorkerPool       [MaxRequestWorkers]worker.RequestWorker
+	Connections chan net.Conn
+	Requests    chan *http.Request
+	WorkerCount int
+	Port        string
+	WorkerPool  [MaxWorkers]worker.Worker
 }
 
 func New(s *spec.ProxySpec) *Handler {
 	logger.Info("Creating new proxy handler")
-	var pool [MaxNewConnWorkers]worker.SortingWorker
+	var pool [MaxWorkers]worker.Worker
 
 	logger.Info("Creating sorting workers")
-	newConns := make(chan net.Conn, MaxConnections)
-	for i := 0; i < MaxNewConnWorkers; i++ {
-		pool[i] = worker.NewSortingWorker(newConns)
+	conns := make(chan net.Conn, MaxConnections)
+	for i := 0; i < MaxWorkers; i++ {
+		pool[i] = worker.NewWorker(conns)
 		go pool[i].Run()
 	}
 
-	logger.Info("Creating request workers")
-	var requestWorkerPool [MaxRequestWorkers]worker.RequestWorker
-	requests := make(chan *http.Request, MaxRequests)
-	for j := 0; j < MaxRequestWorkers; j++ {
-		requestWorkerPool[j] = worker.NewRequestWorker(requests)
-		go requestWorkerPool[j].Run()
-	}
-
 	return &Handler{
-		NewConnections: newConns,
-		WorkerCount:    s.HandlerSpec.WorkerCount,
-		Port:           s.HandlerSpec.Port,
-		NewConnectionWorkerPool: pool,
-		RequestWorkerPool:       requestWorkerPool,
+		Connections: conns,
+		WorkerCount: s.HandlerSpec.WorkerCount,
+		Port:        s.HandlerSpec.Port,
+		WorkerPool:  pool,
 	}
 }
 
@@ -57,13 +46,13 @@ func (h *Handler) Listen() error {
 		logger.Error(err)
 		return err
 	}
-
+	processed := 0
 	logger.Info("Listening...")
 
 	for {
-		logger.Info("Number of connections", len(h.NewConnections))
-		if len(h.NewConnections) > MaxConnections*0.90 {
-			logger.Warn("Approaching maximum connections", len(h.NewConnections))
+		logger.Info("Number of connections", len(h.Connections))
+		if len(h.Connections) > MaxConnections*0.90 {
+			logger.Warn("Approaching maximum connections", len(h.Connections))
 		}
 
 		conn, err := ln.Accept()
@@ -72,7 +61,9 @@ func (h *Handler) Listen() error {
 			return err
 		}
 
-		h.NewConnections <- conn
+		processed++
+		logger.Info(processed)
+		h.Connections <- conn
 		logger.Info("Pushed conn onto channel")
 	}
 }
