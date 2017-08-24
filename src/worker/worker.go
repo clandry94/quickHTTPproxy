@@ -47,7 +47,7 @@ func (sw *Worker) Run() {
 				//work.Close()
 				//logger.Info("Connection closed")
 			case <-sw.quit:
-				logger.Info("Closing worker", sw.id)
+				logger.Info("Closing worker with id %v", sw.id)
 			}
 
 		}

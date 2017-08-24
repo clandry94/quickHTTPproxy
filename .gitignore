@@ -3,6 +3,8 @@
 *.dll
 *.so
 *.dylib
+main
+corgi
 
 # Test binary, build with `go test -c`
 *.test

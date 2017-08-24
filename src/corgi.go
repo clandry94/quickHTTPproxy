@@ -1,4 +1,4 @@
-package corgi
+package main
 
 import (
 	"encoding/json"

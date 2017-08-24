@@ -12,7 +12,7 @@ const MaxConnections = 1000
 const MaxRequests = 1000
 const MaxWorkers = 20
 
-type Handler struct {
+type Proxy struct {
 	Connections chan net.Conn
 	Requests    chan *http.Request
 	WorkerCount int
@@ -20,7 +20,7 @@ type Handler struct {
 	WorkerPool  [MaxWorkers]worker.Worker
 }
 
-func New(s *spec.ProxySpec) *Handler {
+func New(s *spec.ProxySpec) *Proxy {
 	logger.Info("Creating proxy handler")
 	var pool [MaxWorkers]worker.Worker
 
@@ -30,7 +30,7 @@ func New(s *spec.ProxySpec) *Handler {
 		go pool[i].Run()
 	}
 
-	return &Handler{
+	return &Proxy{
 		Connections: conns,
 		WorkerCount: s.HandlerSpec.WorkerCount,
 		Port:        s.HandlerSpec.Port,
@@ -38,20 +38,20 @@ func New(s *spec.ProxySpec) *Handler {
 	}
 }
 
-func (h *Handler) Listen() error {
-	ln, err := net.Listen("tcp", h.Port)
+func (p *Proxy) Listen() error {
+	ln, err := net.Listen("tcp", p.Port)
 
 	if err != nil {
 		logger.Error(err)
 		return err
 	}
 	processed := 0
-	logger.Info("Listening...")
-	logger.Info("Port ", h.Port)
+	logger.Info("Listening on %v", p.Port)
+
 	for {
-		logger.Info("Number of connections", len(h.Connections))
-		if len(h.Connections) > MaxConnections*0.90 {
-			logger.Warn("Approaching maximum connections", len(h.Connections))
+		logger.Infof("%v connections", len(p.Connections))
+		if len(p.Connections) > MaxConnections*0.90 {
+			logger.Warnf("Approaching maximum connections: %v", len(p.Connections))
 		}
 
 		conn, err := ln.Accept()
@@ -62,7 +62,7 @@ func (h *Handler) Listen() error {
 
 		processed++
 		logger.Info(processed)
-		h.Connections <- conn
+		p.Connections <- conn
 		logger.Info("Pushed conn onto channel")
 	}
 }
