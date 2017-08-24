@@ -21,10 +21,9 @@ type Handler struct {
 }
 
 func New(s *spec.ProxySpec) *Handler {
-	logger.Info("Creating new proxy handler")
+	logger.Info("Creating proxy handler")
 	var pool [MaxWorkers]worker.Worker
 
-	logger.Info("Creating sorting workers")
 	conns := make(chan net.Conn, MaxConnections)
 	for i := 0; i < MaxWorkers; i++ {
 		pool[i] = worker.NewWorker(conns)
@@ -48,7 +47,7 @@ func (h *Handler) Listen() error {
 	}
 	processed := 0
 	logger.Info("Listening...")
-
+	logger.Info("Port ", h.Port)
 	for {
 		logger.Info("Number of connections", len(h.Connections))
 		if len(h.Connections) > MaxConnections*0.90 {

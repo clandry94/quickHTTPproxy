@@ -1,4 +1,4 @@
-package main
+package corgi
 
 import (
 	"encoding/json"
@@ -8,13 +8,11 @@ import (
 	"github.com/ivahaev/go-logger"
 	"io/ioutil"
 	"os"
-	"runtime"
 )
 
 func main() {
 	logger.SetLevel("DEBUG")
 	logger.Info("Initializing...")
-	logger.Info("GOMAXPROCS", runtime.GOMAXPROCS)
 	config, err := checkArgs()
 	if err != nil {
 		logger.Error(err)
@@ -23,7 +21,7 @@ func main() {
 
 	proxySpec, err := loadConfig(config)
 	if err != nil {
-		logger.Error(err)
+		logger.Errorf("Could not load spec: %v", err)
 		panic(err)
 	}
 	logger.Info("Spec loaded")
@@ -45,7 +43,7 @@ func loadConfig(config string) (*spec.ProxySpec, error) {
 
 	j, err := ioutil.ReadFile(config)
 	if err != nil {
-		logger.Error("Unable to read configuration file", config)
+		logger.Errorf("Unable to read configuration file: %v", config)
 		return ps, err
 	}
 
